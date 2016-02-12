@@ -1,25 +1,26 @@
+# Language setting
 language: node_js
 
+
+# Version number
 node_js:
-  - 0.10.25
+  - 0.12
 
-services:
-  - mysql
-
-# For xunit-file module to put results in shippable folder
 env:
-  - XUNIT_FILE=shippable/testresults/result.xml
+  global:
+    - XUNIT_FILE=shippable/testresults/result.xml
 
-# Make folders for the reports, and create the SQL db
-before_script:
-  - mkdir -p shippable/testresults
-  - mkdir -p shippable/codecoverage
-  - mysql -e 'create database if not exists test;'
+  matrix:
+    - M1=ONE
 
-script:
-  - npm test
+build:
+  ci:
+    - mkdir -p shippable/testresults
+    - mkdir -p shippable/codecoverage
+    - mysql -e 'create database if not exists test;'
+    - npm test
+    - ./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha test.js -- -u tdd
+    - ./node_modules/.bin/istanbul report cobertura --dir  shippable/codecoverage/
 
-# Generate coverage report with istanbul
-after_script:
-  - ./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha test.js -- -u tdd
-  - ./node_modules/.bin/istanbul report cobertura --dir  shippable/codecoverage/
+  post_ci:
+    - echo "true"
